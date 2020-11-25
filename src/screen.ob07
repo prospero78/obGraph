@@ -131,6 +131,11 @@ PROCEDURE Finish*(screen :TScreen); (* Завершение работы экр�
 			END;
 	END Finish;
 
+PROCEDURE End*(screen :TScreen);
+	BEGIN
+		ASSERT (screen.painting);
+	END End;
+
 BEGIN(* Инициализация X11 *)
 	libX11 := unix.dlopen (SYSTEM.SADR("libX11.so.6"), unix.RTLD_LAZY);
 	ASSERT (libX11 # 0);

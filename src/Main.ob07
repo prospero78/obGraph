@@ -58,7 +58,7 @@ PROCEDURE screenUpdate;(* Отрисовка всего кадра *)
 		mGr.Begin;
 		mGr.clear (0C0F0FFH);  (* light blue *)
 		turtlePicture (currentX, 15);
-		mGr.screenEnd;
+		mGr.End;
 	END screenUpdate;
 
 PROCEDURE MainLoop; (* Главный цикл работы анимации *)

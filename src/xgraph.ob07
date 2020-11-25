@@ -63,12 +63,12 @@ PROCEDURE Begin*;
 		mScr.Begin(screen)
 	END Begin;
 
-PROCEDURE screenEnd*;
-	BEGIN
-		ASSERT (screen.painting);
-		mScr.XPutImage (screen.display, win.number, screen.gc, screen.surface, 0, 0, 0, 0, win.width, win.height);
+PROCEDURE End*;
+	BEGIN 
+		mScr.End(screen);
+		mScr.XPutImage(screen.display, win.number, screen.gc, screen.surface, 0, 0, 0, 0, win.width, win.height);
 		mScr.PaintingReset(screen)
-	END screenEnd;
+	END End;
 
 
 PROCEDURE readInt (e :XEvent; i :INTEGER) :INTEGER;
