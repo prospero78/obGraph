@@ -43,7 +43,6 @@ VAR
 
    _screen :INTEGER;
    connectionNr :INTEGER; (* fd of X11 socket *)
-   readX11 :unix.fd_set;  (* used by select() timeout on X11 socket *)
 
 
 PROCEDURE getSymAdr (lib :INTEGER; name :ARRAY OF CHAR; adr :INTEGER);
@@ -95,8 +94,8 @@ PROCEDURE init():mScr.TScreen;
 PROCEDURE finish*;
 	VAR ri :INTEGER;
 	BEGIN
-			IF mScr.Display(screen) # 0 THEN
-				mScr.XCloseDisplay(mScr.Display(screen));
+			IF screen.display # 0 THEN
+				mScr.XCloseDisplay(screen.display);
 				mScr.DisplaySet(screen, 0)
 			END;
 			IF mScr.libX11 # 0 THEN
@@ -111,17 +110,17 @@ PROCEDURE createWindow* (w, h :INTEGER);
 		eventMask :INTEGER;
 		winNumber :INTEGER;
 	BEGIN
-		IF (w > mScr.Width(screen)) OR (h > mScr.Height(screen)) THEN
+		IF (w > screen.width) OR (h > screen.height) THEN
 			out.str ("error: X11.createWindow: window too large"); out.exit(1);
 		END;
 		ASSERT ((w >= 0) & (h >= 0));
-		winNumber := mScr.XCreateWindow (mScr.Display(screen), mScr.XDefaultRootWindow (mScr.Display(screen)), 0, 0, w, h, 0,
-							mScr.XDefaultDepth (mScr.Display(screen), _screen), InputOutput, mScr.XDefaultVisual (mScr.Display(screen), _screen), 0, 0);
+		winNumber := mScr.XCreateWindow(screen.display, mScr.XDefaultRootWindow (screen.display), 0, 0, w, h, 0,
+							mScr.XDefaultDepth (screen.display, _screen), InputOutput, mScr.XDefaultVisual (screen.display, _screen), 0, 0);
 		
 		win := mWin.New(w, h, winNumber);
 		eventMask := StructureNotifyMask + ExposureMask + KeyPressMask + ButtonPressMask;
-		mScr.XSelectInput (mScr.Display(screen), win.number, eventMask);
-		mScr.XMapWindow (mScr.Display(screen), win.number);
+		mScr.XSelectInput (screen.display, win.number, eventMask);
+		mScr.XMapWindow (screen.display, win.number);
 	END createWindow;
 
 
@@ -135,7 +134,7 @@ PROCEDURE screenBegin*;
 PROCEDURE screenEnd*;
 	BEGIN
 		ASSERT (painting);
-		mScr.XPutImage (mScr.Display(screen), win.number, mScr.Gc(screen), mScr.Img(screen), 0, 0, 0, 0, win.width, win.height);
+		mScr.XPutImage (screen.display, win.number, screen.gc, screen.surface, 0, 0, 0, 0, win.width, win.height);
 		painting := FALSE;
 	END screenEnd;
 
@@ -172,27 +171,34 @@ PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :EventPars);
 	*)
 			  _type := 0;
 			  WHILE _type = 0 DO
-						 IF (msTimeOut > 0) & (mScr.XPending(mScr.Display(screen)) = 0) THEN
-									timeout.tv_sec := msTimeOut DIV 1000; timeout.tv_usec := (msTimeOut MOD 1000) * 1000;
-									ri := unix.select (connectionNr + 1, readX11, NIL, NIL, timeout); ASSERT (ri # -1);
-									IF ri = 0 THEN _type := EventTimeOut; ev[1] := 0; ev[2] := 0; ev[3] := 0; ev[4] := 0 END;
+						 IF (msTimeOut > 0) & (mScr.XPending(screen.display) = 0) THEN
+									timeout.tv_sec := msTimeOut DIV 1000;
+									timeout.tv_usec := (msTimeOut MOD 1000) * 1000;
+									ri := unix.select (connectionNr + 1, screen.readX11, NIL, NIL, timeout);
+									ASSERT (ri # -1);
+									IF ri = 0 THEN
+										_type := EventTimeOut; ev[1] := 0;
+										ev[2] := 0;
+										ev[3] := 0;
+										ev[4] := 0
+									END;
 						 END;
 						 IF _type = 0 THEN
-									mScr.XNextEvent (mScr.Display(screen), SYSTEM.ADR(event));
+									mScr.XNextEvent (screen.display, SYSTEM.ADR(event));
 									CASE readInt (event, 0) OF
 									Expose :
 											  x := readInt (event, 5 + 5 * bit64); y := readInt (event, 6 + 5 * bit64);
 											  w := readInt (event, 7 + 5 * bit64); h := readInt (event, 8 + 5 * bit64);
-											  mScr.XPutImage (mScr.Display(screen), win.number, mScr.Gc(screen), mScr.Img(screen), x, y, x, y, w, h);
+											  mScr.XPutImage (screen.display, win.number, screen.gc, screen.surface, x, y, x, y, w, h);
 									| ConfigureNotify :
 											  w := readInt (event, 8 + 6 * bit64); h := readInt (event, 9 + 6 * bit64);
 											  IF (w # win.width) & (h # win.height) THEN
 														 ASSERT ((w >= 0) & (h >= 0));
-														IF w > mScr.Width(screen) THEN
-														 	w := mScr.Width(screen)
+														IF w > screen.width THEN
+														 	w := screen.width
 														END;
-														IF h > mScr.Height(screen) THEN
-															h := mScr.Height(screen)
+														IF h > screen.height THEN
+															h := screen.height
 														END;
 														mWin.WidthSet(win, w); mWin.HeightSet(win, h);
 														ev[0] := EventResize; ev[1] := 0; ev[2] := w; ev[3] := h; ev[4] := 0;
@@ -223,7 +229,7 @@ PROCEDURE clear* (color :INTEGER);   (* fill window area with color *)
 		p, i, j :INTEGER;
 	BEGIN
 		FOR j := 0 TO win.height-1 DO
-			p := mScr.Base(screen) + j*mScr.Stride(screen);
+			p := screen.base + j*screen.stride;
 			FOR i := 0 TO win.width-1 DO
 				SYSTEM.PUT32 (p, color); INC (p, 4)
 			END

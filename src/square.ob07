@@ -44,7 +44,7 @@ PROCEDURE Draw*(square :TSquare); (* Рисует прямоугольник з�
 		p, i, j :INTEGER;
 	BEGIN
 		p := (square.y*stride + square.x*4)*Side;
-		ASSERT (p + (Side-1)*mScr.Stride(mGr.screen) + (Side-1)*4 <= screenBufSize);
+		ASSERT (p + (Side-1)*mGr.screen.stride + (Side-1)*4 <= screenBufSize);
 		p := base + p;
 		FOR j := 0 TO Side-1 DO
 			FOR i := 0 TO Side-1 DO 
@@ -56,8 +56,8 @@ PROCEDURE Draw*(square :TSquare); (* Рисует прямоугольник з�
 	END Draw;
 
 BEGIN
-	base := mScr.Base(mGr.screen);
+	base := mGr.screen.base;
 	mGr.createWindow (800, 480);
-	stride := mScr.Stride(mGr.screen);
+	stride := mGr.screen.stride;
 	screenBufSize := mGr.win.height * stride
 END square.

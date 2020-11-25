@@ -10,15 +10,15 @@ CONST
 
 TYPE
 	TScreen* = POINTER TO RECORD (* Тип экрана с полями для успешной работы *)
-		display	:INTEGER; (* номер оригинального экрана *)
-		width		:INTEGER;
-		height   :INTEGER;
+		display*	:INTEGER; (* номер оригинального экрана *)
+		width*	:INTEGER;
+		height*  :INTEGER;
 		connectionNr	:INTEGER;     (* fd of X11 socket *)
-		readX11	:unix.fd_set; (* used by select() timeout on X11 socket *)
-		screen :INTEGER;
-		base		:INTEGER;
-		surface	:INTEGER;
-		gc			:INTEGER;
+		readX11*	:unix.fd_set; (* used by select() timeout on X11 socket *)
+		screen	:INTEGER;
+		base*		:INTEGER;
+		surface*	:INTEGER;
+		gc*		:INTEGER;
 		stride*	:INTEGER   (* width, height, base ptr, stride in bytes, 32-bit RGB *)
 	END;
 
@@ -84,46 +84,11 @@ PROCEDURE SetXLib*(val :INTEGER);
 	BEGIN
 		libX11 := val
 	END SetXLib;
-	
-PROCEDURE Display*(screen :TScreen):INTEGER;
-	BEGIN
-		RETURN screen.display
-	END Display;
 
 PROCEDURE DisplaySet*(screen :TScreen; display :INTEGER);
 	BEGIN
 		screen.display := display
 	END DisplaySet;
-
-PROCEDURE Width*(screen :TScreen):INTEGER;
-	BEGIN
-		RETURN screen.width
-	END Width;
-
-PROCEDURE Height*(screen :TScreen):INTEGER;
-	BEGIN
-		RETURN screen.height
-	END Height;
-
-PROCEDURE Base*(screen :TScreen):INTEGER;
-	BEGIN
-		RETURN screen.base
-	END Base;
-
-PROCEDURE Stride*(screen :TScreen):INTEGER;
-	BEGIN
-		RETURN screen.stride
-	END Stride;
-
-PROCEDURE Gc*(screen :TScreen):INTEGER;
-	BEGIN
-		RETURN screen.gc
-	END Gc;
-
-PROCEDURE Img*(screen :TScreen):INTEGER;
-	BEGIN
-		RETURN screen.surface
-	END Img;
 
 PROCEDURE getSymAdr (lib :INTEGER; name :ARRAY OF CHAR; adr :INTEGER);
 	VAR sym :INTEGER;
@@ -137,25 +102,25 @@ PROCEDURE getSymAdr (lib :INTEGER; name :ARRAY OF CHAR; adr :INTEGER);
 
 BEGIN(* Инициализация X11 *)
 	libX11 := unix.dlopen (SYSTEM.SADR("libX11.so.6"), unix.RTLD_LAZY);
-   ASSERT (libX11 # 0);
-   
-   getSymAdr (libX11, "XCloseDisplay", SYSTEM.ADR(XCloseDisplay));
-   getSymAdr (libX11, "XSynchronize", SYSTEM.ADR(XSynchronize));
-   getSymAdr (libX11, "XCreateWindow", SYSTEM.ADR(XCreateWindow));
-   getSymAdr (libX11, "XDefaultScreen", SYSTEM.ADR(XDefaultScreen));
-   getSymAdr (libX11, "XDefaultGC", SYSTEM.ADR(XDefaultGC));
-   getSymAdr (libX11, "XDisplayWidth", SYSTEM.ADR(XDisplayWidth));
-   getSymAdr (libX11, "XDisplayHeight", SYSTEM.ADR(XDisplayHeight));
-   getSymAdr (libX11, "XDefaultVisual", SYSTEM.ADR(XDefaultVisual));
-   getSymAdr (libX11, "XDefaultRootWindow", SYSTEM.ADR(XDefaultRootWindow));
-   getSymAdr (libX11, "XDefaultDepth", SYSTEM.ADR(XDefaultDepth));
-   getSymAdr (libX11, "XSelectInput", SYSTEM.ADR(XSelectInput));
-   getSymAdr (libX11, "XMapWindow", SYSTEM.ADR(XMapWindow));
-   getSymAdr (libX11, "XNextEvent", SYSTEM.ADR(XNextEvent));
-   getSymAdr (libX11, "XPending", SYSTEM.ADR(XPending));
-   getSymAdr (libX11, "XLookupString", SYSTEM.ADR(XLookupString));
-   getSymAdr (libX11, "XCreateImage", SYSTEM.ADR(XCreateImage));
-   getSymAdr (libX11, "XPutImage", SYSTEM.ADR(XPutImage));
+	ASSERT (libX11 # 0);
+
+	getSymAdr (libX11, "XCloseDisplay", SYSTEM.ADR(XCloseDisplay));
+	getSymAdr (libX11, "XSynchronize", SYSTEM.ADR(XSynchronize));
+	getSymAdr (libX11, "XCreateWindow", SYSTEM.ADR(XCreateWindow));
+	getSymAdr (libX11, "XDefaultScreen", SYSTEM.ADR(XDefaultScreen));
+	getSymAdr (libX11, "XDefaultGC", SYSTEM.ADR(XDefaultGC));
+	getSymAdr (libX11, "XDisplayWidth", SYSTEM.ADR(XDisplayWidth));
+	getSymAdr (libX11, "XDisplayHeight", SYSTEM.ADR(XDisplayHeight));
+	getSymAdr (libX11, "XDefaultVisual", SYSTEM.ADR(XDefaultVisual));
+	getSymAdr (libX11, "XDefaultRootWindow", SYSTEM.ADR(XDefaultRootWindow));
+	getSymAdr (libX11, "XDefaultDepth", SYSTEM.ADR(XDefaultDepth));
+	getSymAdr (libX11, "XSelectInput", SYSTEM.ADR(XSelectInput));
+	getSymAdr (libX11, "XMapWindow", SYSTEM.ADR(XMapWindow));
+	getSymAdr (libX11, "XNextEvent", SYSTEM.ADR(XNextEvent));
+	getSymAdr (libX11, "XPending", SYSTEM.ADR(XPending));
+	getSymAdr (libX11, "XLookupString", SYSTEM.ADR(XLookupString));
+	getSymAdr (libX11, "XCreateImage", SYSTEM.ADR(XCreateImage));
+	getSymAdr (libX11, "XPutImage", SYSTEM.ADR(XPutImage));
 	getSymAdr (libX11, "XOpenDisplay", SYSTEM.ADR(XOpenDisplay));
 	getSymAdr (libX11, "XConnectionNumber", SYSTEM.ADR(XConnectionNumber));
 END screen.
