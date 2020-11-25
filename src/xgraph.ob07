@@ -40,9 +40,6 @@ VAR
 	screen* : mScr.TScreen;
 	win* :mWin.TWindow;
 
-   connectionNr :INTEGER; (* fd of X11 socket *)
-
-
 PROCEDURE getSymAdr (lib :INTEGER; name :ARRAY OF CHAR; adr :INTEGER);
 	VAR sym :INTEGER;
 	BEGIN
@@ -173,7 +170,7 @@ PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :EventPars);
 						 IF (msTimeOut > 0) & (mScr.XPending(screen.display) = 0) THEN
 									timeout.tv_sec := msTimeOut DIV 1000;
 									timeout.tv_usec := (msTimeOut MOD 1000) * 1000;
-									ri := unix.select (connectionNr + 1, screen.readX11, NIL, NIL, timeout);
+									ri := unix.select (screen.connectionNr + 1, screen.readX11, NIL, NIL, timeout);
 									ASSERT (ri # -1);
 									IF ri = 0 THEN
 										_type := EventTimeOut; ev[1] := 0;

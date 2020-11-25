@@ -13,7 +13,7 @@ TYPE
 		display*	:INTEGER; (* номер оригинального экрана *)
 		width*	:INTEGER;
 		height*  :INTEGER;
-		connectionNr	:INTEGER;     (* fd of X11 socket *)
+		connectionNr*	:INTEGER;     (* fd of X11 socket *)
 		readX11*	:unix.fd_set; (* used by select() timeout on X11 socket *)
 		screen*	:INTEGER;
 		base*		:INTEGER;
