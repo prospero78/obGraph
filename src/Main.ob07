@@ -9,10 +9,12 @@ IMPORT SYSTEM,
 
 CONST
 	Side = 8;  (* nr of pixels of a square side *)
+	timeOut = 20; (* Timeout for repeat update screen *)
 
 VAR 
 	currentX :INTEGER;
 	square: mSqr.TSquare;
+	iter: INTEGER;
 
 PROCEDURE DrawAttr(color, x, y :INTEGER); (* отрисовывает квадрат с нужным цветом, в нужной позиции *)
 	BEGIN
@@ -54,12 +56,35 @@ PROCEDURE turtlePicture (x , y : INTEGER);(* Рисует картинку че�
 		linePut(x, y + 11, ".....bb.......")
 	END turtlePicture;
 
+PROCEDURE turtlePicture2 (x , y : INTEGER);(* Рисует картинку черепашки ил строк и литер *)
+	BEGIN
+		linePut(x, y + 0 , "..bb..........");
+		linePut(x, y + 1 , "...bbb........");
+		linePut(x, y + 2 , "...bbbb.......");
+		linePut(x, y + 3 , ".bb..bbb......");
+		linePut(x, y + 4 , "bbgggbbbgbbgb.");
+		linePut(x, y + 5 , ".gggrrrggbbbb.");
+		linePut(x, y + 6 , ".ggrrrrggbbbbg");
+		linePut(x, y + 7 , ".ggggggg......");
+		linePut(x, y + 8 , ".bb..bbb......");
+		linePut(x, y + 9 , "....bbbb......");
+		linePut(x, y + 10, "....bbb.......");
+		linePut(x, y + 11, "...bb.........")
+	END turtlePicture2;
+
 PROCEDURE screenUpdate;(* Отрисовка всего кадра *)
 	BEGIN
 		mGr.Begin;
-		mGr.clear (0C0F0FFH);  (* light blue *)
-		turtlePicture (currentX, 15);
+		mGr.Fill(0909090H);
+		IF iter < 15 THEN
+			turtlePicture(currentX, 15);
+		ELSIF iter < 30 THEN
+			turtlePicture2(currentX, 15);
+		ELSE
+			iter := 0;
+		END;
 		mGr.End;
+		INC(iter)
 	END screenUpdate;
 
 PROCEDURE MainLoop; (* Главный цикл работы анимации *)
@@ -68,14 +93,15 @@ PROCEDURE MainLoop; (* Главный цикл работы анимации *)
 		ev :mEvn.EventPars;
 		ch :CHAR;
 	BEGIN
-		isStop := FALSE; currentX := 15;
+		isStop := FALSE;
+		currentX := 15;
 		square := mSqr.New(Side);
 		screenUpdate;
 		REPEAT
-			mGr.nextEvent (400, ev);
+			mGr.nextEvent (timeOut, ev);
 			IF ev[0] = mGr.EventTimeOut THEN
 				screenUpdate;
-				INC (currentX, 4);
+				INC (currentX, 1);
 			ELSIF ev[0] = mGr.EventKeyPressed THEN
 				ch := CHR(ev[4]);
 				IF (ch = "q") OR (ch = 0AX) OR (ch = " ") THEN
