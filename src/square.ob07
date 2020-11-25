@@ -1,6 +1,7 @@
 MODULE square; (* Отображает квадрат заданным цветом и размером *)
 
-IMPORT SYSTEM;
+IMPORT SYSTEM,
+	mGr := gr;
 
 CONST
 	Side* = 8;  (* Количество пикселей в размере прямоугольника *)
@@ -13,17 +14,16 @@ TYPE
 	END;
 
 VAR
-	stride* :INTEGER;
-	screenBufSize* :INTEGER; (* размер буфера экрана *)
-	base* :INTEGER;
+	base :INTEGER;
+	stride :INTEGER;
+	screenBufSize :INTEGER; (* размер буфера экрана *)
 
 (* Создаёт новый прямоугольник для рисования *)
-PROCEDURE New*(color, size: INTEGER):TSquare;
+PROCEDURE New*(size: INTEGER):TSquare;
 	VAR
 		square:TSquare;
 	BEGIN
 		NEW(square);
-		square.color := color;
 		square.size  := size;
 		RETURN square
 	END New; 
@@ -56,4 +56,10 @@ PROCEDURE Draw*(square :TSquare);
 		p := p + stride - Side*4;
 		END;
 	END Draw;
+
+BEGIN
+	base := mGr.base;
+	mGr.createWindow (800, 480);
+	stride := mGr.stride;
+	screenBufSize := mGr.winHeight * stride
 END square.
