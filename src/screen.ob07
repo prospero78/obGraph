@@ -10,62 +10,152 @@ CONST
 
 TYPE
 	TScreen* = POINTER TO RECORD (* Тип экрана с полями для успешной работы *)
-		x11		:INTEGER; (* номер оригинального экрана *)
+		display	:INTEGER; (* номер оригинального экрана *)
 		width		:INTEGER;
 		height   :INTEGER;
-		numConnect	:INTEGER;     (* fd of X11 socket *)
+		connectionNr	:INTEGER;     (* fd of X11 socket *)
 		readX11	:unix.fd_set; (* used by select() timeout on X11 socket *)
-		xDefault :INTEGER;
+		screen :INTEGER;
 		base		:INTEGER;
 		surface	:INTEGER;
 		gc			:INTEGER;
-		stride	:INTEGER
+		stride*	:INTEGER   (* width, height, base ptr, stride in bytes, 32-bit RGB *)
 	END;
 
 VAR
-	XDefaultScreen :PROCEDURE [linux] (display :INTEGER) :INTEGER;
+	libX11* :INTEGER;        (* handle to dynamic library *)
+   XConnectionNumber :PROCEDURE [linux] (display :INTEGER) :INTEGER;
 	XOpenDisplay :PROCEDURE [linux] (name :INTEGER) :INTEGER;
-	XConnectionNumber :PROCEDURE [linux] (display :INTEGER) :INTEGER;
-	XDefaultGC :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;  (* GC *)
-	XDisplayWidth :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
-   XDisplayHeight :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
-   XDefaultDepth :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
-   XDefaultVisual :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;  (* visual *)
-   XCreateImage :PROCEDURE [linux] (display, visual, depth, format, offset, data,
+   XCloseDisplay* :PROCEDURE [linux] (display :INTEGER);
+   XSynchronize* :PROCEDURE [linux] (display, onoff :INTEGER) :INTEGER;  (* return prev onoff *)
+   XCreateWindow* :PROCEDURE [linux] (display, parent_window, x, y, w, h, border_width, depth,
+                class, visual, valuemask, attributes :INTEGER) :INTEGER;  (* Window *)
+   XDefaultScreen* :PROCEDURE [linux] (display :INTEGER) :INTEGER;
+   XDefaultGC* :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;  (* GC *)
+   XDisplayWidth* :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
+   XDisplayHeight* :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
+   XDefaultVisual* :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;  (* visual *)
+   XDefaultRootWindow* :PROCEDURE [linux] (display :INTEGER) :INTEGER;  (* Window *)
+   XDefaultDepth* :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
+   XSelectInput* :PROCEDURE [linux] (display, window, event_mask :INTEGER);
+   XMapWindow* :PROCEDURE [linux] (display, window :INTEGER);
+   XNextEvent* :PROCEDURE [linux] (display, XEvent_p :INTEGER);
+   XPending* :PROCEDURE [linux] (display :INTEGER) :INTEGER;
+   XLookupString* :PROCEDURE [linux] (key_event, buffer_return, buflen, keysym_return, status_in_out :INTEGER) :INTEGER;
+   XCreateImage* :PROCEDURE [linux] (display, visual, depth, format, offset, data,
                 width, height, bitmap_pad, bytes_per_line :INTEGER) :INTEGER; (* ptr to XImage *)
+   XPutImage* :PROCEDURE [linux] (display, window, gc, image, sx, sy, dx, dy, w, h :INTEGER);
 
-PROCEDURE New():TScreen; (* создаёт новый экран *)
+PROCEDURE New*():TScreen; (* создаёт новый экран *)
 	VAR
 		screen     :TScreen;
 	BEGIN
 		NEW(screen);
-		screen.x11 := XOpenDisplay(0);
-		IF screen.x11 = 0 THEN
+		screen.display := XOpenDisplay(0);
+		IF screen.display = 0 THEN
 			out.str ("ERROR: can not open X11 display.");
 			out.nl;
 			out.exit(1)
 		END;
 		(* ri := XSynchronize (display, 1); *)
-		screen.numConnect := XConnectionNumber (screen.x11);
-		ASSERT (screen.numConnect < unix.FD_SETSIZE);
+		screen.connectionNr := XConnectionNumber (screen.display);
+		ASSERT (screen.connectionNr < unix.FD_SETSIZE);
 		NEW (screen.readX11);
 		unix.FD_ZERO(screen.readX11);
-		unix.FD_SET (screen.numConnect, screen.readX11);
-		screen.xDefault := XDefaultScreen(screen.x11);
-		screen.gc := XDefaultGC (screen.x11, screen.xDefault);
-		screen.width := XDisplayWidth (screen.x11, screen.xDefault);
-		screen.height := XDisplayHeight (screen.x11, screen.xDefault);
+		unix.FD_SET (screen.connectionNr, screen.readX11);
+		screen.screen := XDefaultScreen(screen.display);
+		screen.gc := XDefaultGC (screen.display, screen.screen);
+		screen.width := XDisplayWidth (screen.display, screen.screen);
+		screen.height := XDisplayHeight (screen.display, screen.screen);
 		screen.base := unix.malloc (screen.width * screen.height * 4);
 		IF screen.base = 0 THEN
 			out.formatInt2 ("ERROR: can not allocate screen buffer % x %", screen.width, screen.height); out.nl;
 			out.exit(1);
 		END;
 		screen.stride := screen.width * 4;
-		screen.surface := XCreateImage (screen.x11,
-					XDefaultVisual(screen.x11, screen.xDefault),
-					XDefaultDepth (screen.x11, screen.xDefault),
+		screen.surface := XCreateImage (screen.display,
+					XDefaultVisual(screen.display, screen.screen),
+					XDefaultDepth (screen.display, screen.screen),
 					ZPixmap, 0, screen.base, screen.width, screen.height, 32, 0);
 		RETURN screen
 	END New;
 
+PROCEDURE SetXLib*(val :INTEGER);
+	BEGIN
+		libX11 := val
+	END SetXLib;
+	
+PROCEDURE Display*(screen :TScreen):INTEGER;
+	BEGIN
+		RETURN screen.display
+	END Display;
+
+PROCEDURE DisplaySet*(screen :TScreen; display :INTEGER);
+	BEGIN
+		screen.display := display
+	END DisplaySet;
+
+PROCEDURE Width*(screen :TScreen):INTEGER;
+	BEGIN
+		RETURN screen.width
+	END Width;
+
+PROCEDURE Height*(screen :TScreen):INTEGER;
+	BEGIN
+		RETURN screen.height
+	END Height;
+
+PROCEDURE Base*(screen :TScreen):INTEGER;
+	BEGIN
+		RETURN screen.base
+	END Base;
+
+PROCEDURE Stride*(screen :TScreen):INTEGER;
+	BEGIN
+		RETURN screen.stride
+	END Stride;
+
+PROCEDURE Gc*(screen :TScreen):INTEGER;
+	BEGIN
+		RETURN screen.gc
+	END Gc;
+
+PROCEDURE Img*(screen :TScreen):INTEGER;
+	BEGIN
+		RETURN screen.surface
+	END Img;
+
+PROCEDURE getSymAdr (lib :INTEGER; name :ARRAY OF CHAR; adr :INTEGER);
+	VAR sym :INTEGER;
+	BEGIN
+			  sym := unix.dlsym (lib, SYSTEM.ADR(name[0]));
+			  IF sym = 0 THEN out.formatStr ("error: dlsym: %", name); out.nl END;
+			  ASSERT (sym # 0);
+			  SYSTEM.PUT (adr, sym)
+	END getSymAdr;
+
+
+BEGIN(* Инициализация X11 *)
+	libX11 := unix.dlopen (SYSTEM.SADR("libX11.so.6"), unix.RTLD_LAZY);
+   ASSERT (libX11 # 0);
+   
+   getSymAdr (libX11, "XCloseDisplay", SYSTEM.ADR(XCloseDisplay));
+   getSymAdr (libX11, "XSynchronize", SYSTEM.ADR(XSynchronize));
+   getSymAdr (libX11, "XCreateWindow", SYSTEM.ADR(XCreateWindow));
+   getSymAdr (libX11, "XDefaultScreen", SYSTEM.ADR(XDefaultScreen));
+   getSymAdr (libX11, "XDefaultGC", SYSTEM.ADR(XDefaultGC));
+   getSymAdr (libX11, "XDisplayWidth", SYSTEM.ADR(XDisplayWidth));
+   getSymAdr (libX11, "XDisplayHeight", SYSTEM.ADR(XDisplayHeight));
+   getSymAdr (libX11, "XDefaultVisual", SYSTEM.ADR(XDefaultVisual));
+   getSymAdr (libX11, "XDefaultRootWindow", SYSTEM.ADR(XDefaultRootWindow));
+   getSymAdr (libX11, "XDefaultDepth", SYSTEM.ADR(XDefaultDepth));
+   getSymAdr (libX11, "XSelectInput", SYSTEM.ADR(XSelectInput));
+   getSymAdr (libX11, "XMapWindow", SYSTEM.ADR(XMapWindow));
+   getSymAdr (libX11, "XNextEvent", SYSTEM.ADR(XNextEvent));
+   getSymAdr (libX11, "XPending", SYSTEM.ADR(XPending));
+   getSymAdr (libX11, "XLookupString", SYSTEM.ADR(XLookupString));
+   getSymAdr (libX11, "XCreateImage", SYSTEM.ADR(XCreateImage));
+   getSymAdr (libX11, "XPutImage", SYSTEM.ADR(XPutImage));
+	getSymAdr (libX11, "XOpenDisplay", SYSTEM.ADR(XOpenDisplay));
+	getSymAdr (libX11, "XConnectionNumber", SYSTEM.ADR(XConnectionNumber));
 END screen.

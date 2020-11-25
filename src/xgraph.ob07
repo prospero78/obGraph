@@ -36,36 +36,11 @@ TYPE EventPars* = ARRAY 5 OF INTEGER;
         END;
 
 VAR
-	scrn* : mScr.TScreen;
-	ScreenWidth*, ScreenHeight* :INTEGER;
+	screen* : mScr.TScreen;
    winWidth*, winHeight* :INTEGER; (* draw by writing to pixel buffer: *)
-   base*, stride* :INTEGER;                (* width, height, base ptr, stride in bytes, 32-bit RGB *)
    painting :BOOLEAN;
 
-   libX11 :INTEGER;        (* handle to dynamic library *)
-   XOpenDisplay :PROCEDURE [linux] (name :INTEGER) :INTEGER;
-   XCloseDisplay :PROCEDURE [linux] (display :INTEGER);
-   XSynchronize :PROCEDURE [linux] (display, onoff :INTEGER) :INTEGER;  (* return prev onoff *)
-   XConnectionNumber :PROCEDURE [linux] (display :INTEGER) :INTEGER;
-   XCreateWindow :PROCEDURE [linux] (display, parent_window, x, y, w, h, border_width, depth,
-                class, visual, valuemask, attributes :INTEGER) :INTEGER;  (* Window *)
-   XDefaultScreen :PROCEDURE [linux] (display :INTEGER) :INTEGER;
-   XDefaultGC :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;  (* GC *)
-   XDisplayWidth :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
-   XDisplayHeight :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
-   XDefaultVisual :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;  (* visual *)
-   XDefaultRootWindow :PROCEDURE [linux] (display :INTEGER) :INTEGER;  (* Window *)
-   XDefaultDepth :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
-   XSelectInput :PROCEDURE [linux] (display, window, event_mask :INTEGER);
-   XMapWindow :PROCEDURE [linux] (display, window :INTEGER);
-   XNextEvent :PROCEDURE [linux] (display, XEvent_p :INTEGER);
-   XPending :PROCEDURE [linux] (display :INTEGER) :INTEGER;
-   XLookupString :PROCEDURE [linux] (key_event, buffer_return, buflen, keysym_return, status_in_out :INTEGER) :INTEGER;
-   XCreateImage :PROCEDURE [linux] (display, visual, depth, format, offset, data,
-                width, height, bitmap_pad, bytes_per_line :INTEGER) :INTEGER; (* ptr to XImage *)
-   XPutImage :PROCEDURE [linux] (display, window, gc, image, sx, sy, dx, dy, w, h :INTEGER);
-
-   display, screen, window, gc, img :INTEGER;
+   _screen, window :INTEGER;
    connectionNr :INTEGER; (* fd of X11 socket *)
    readX11 :unix.fd_set;  (* used by select() timeout on X11 socket *)
 
@@ -80,8 +55,13 @@ PROCEDURE getSymAdr (lib :INTEGER; name :ARRAY OF CHAR; adr :INTEGER);
 	END getSymAdr;
 
 
-PROCEDURE init;
+PROCEDURE init():mScr.TScreen;
+	VAR
+		screen: mScr.TScreen;
 	BEGIN
+		screen:=mScr.New();
+		RETURN screen
+		(*
 		display := XOpenDisplay (0);
 		IF display = 0 THEN
 			out.str ("ERROR: can not open X11 display.");
@@ -107,30 +87,37 @@ PROCEDURE init;
 		img := XCreateImage (display, XDefaultVisual (display, screen),
 											XDefaultDepth (display, screen),
 											ZPixmap, 0, base, ScreenWidth, ScreenHeight, 32, 0);
+		*)
 	END init;
 
 
 PROCEDURE finish*;
 	VAR ri :INTEGER;
 	BEGIN
-			  IF display # 0 THEN XCloseDisplay(display); display := 0 END;
-			  IF libX11 # 0 THEN ri := unix.dlclose (libX11); libX11 := 0 END;
+			IF mScr.Display(screen) # 0 THEN
+				mScr.XCloseDisplay(mScr.Display(screen));
+				mScr.DisplaySet(screen, 0)
+			END;
+			IF mScr.libX11 # 0 THEN
+				ri := unix.dlclose (mScr.libX11);
+				mScr.SetXLib(0)
+			END;
 	END finish;
 
 
 PROCEDURE createWindow* (w, h :INTEGER);
 	VAR eventMask :INTEGER;
 	BEGIN
-			  IF (w > ScreenWidth) OR (h > ScreenHeight) THEN
+			  IF (w > mScr.Width(screen)) OR (h > mScr.Height(screen)) THEN
 						 out.str ("error: X11.createWindow: window too large"); out.exit(1);
 			  END;
 			  ASSERT ((w >= 0) & (h >= 0));
-			  window := XCreateWindow (display, XDefaultRootWindow (display), 0, 0, w, h, 0,
-						 XDefaultDepth (display, screen), InputOutput, XDefaultVisual (display, screen), 0, 0);
+			  window := mScr.XCreateWindow (mScr.Display(screen), mScr.XDefaultRootWindow (mScr.Display(screen)), 0, 0, w, h, 0,
+						 mScr.XDefaultDepth (mScr.Display(screen), _screen), InputOutput, mScr.XDefaultVisual (mScr.Display(screen), _screen), 0, 0);
 			  winWidth := w; winHeight := h;
 			  eventMask := StructureNotifyMask + ExposureMask + KeyPressMask + ButtonPressMask;
-			  XSelectInput (display, window, eventMask);
-			  XMapWindow (display, window);
+			  mScr.XSelectInput (mScr.Display(screen), window, eventMask);
+			  mScr.XMapWindow (mScr.Display(screen), window);
 	END createWindow;
 
 
@@ -144,7 +131,7 @@ PROCEDURE screenBegin*;
 PROCEDURE screenEnd*;
 	BEGIN
 			  ASSERT (painting);
-			  XPutImage (display, window, gc, img, 0, 0, 0, 0, winWidth, winHeight);
+			  mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), 0, 0, 0, 0, winWidth, winHeight);
 			  painting := FALSE;
 	END screenEnd;
 
@@ -168,43 +155,43 @@ PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :EventPars);
 			  timeout :unix.timespec;
 	BEGIN
 	(* struct XEvent (64-bit):
-	any:   4 type   8 serial   4 send_event   8 display   8 window   8 window
+	any:   4 type   8 serial   4 send_event   8 mScr.Display(screen)   8 window   8 window
 	expose:   40 any   4 x, y, w, h, count
 	xconfigure:   48 any   4 x, y, w, h
 	xkey / xbutton / xmotion:   48 any   8 sub_window   8 time_ms   4 x, y, x_root, y_root   4 state   4 keycode/button
 	*)
 	(* struct XEvent (32-bit):
-	any:   4 type   4 serial   4 send_event   4 display   4 window
+	any:   4 type   4 serial   4 send_event   4 mScr.Display(screen)   4 window
 	expose:   20 any   4 x, y, w, h, count
 	xconfigure:   24 any   4 x, y, w, h
 	xkey / xbutton / xmotion:   24 any   4 sub_window   4 time_ms   4 x, y, x_root, y_root   4 state   4 keycode/button
 	*)
 			  _type := 0;
 			  WHILE _type = 0 DO
-						 IF (msTimeOut > 0) & (XPending(display) = 0) THEN
+						 IF (msTimeOut > 0) & (mScr.XPending(mScr.Display(screen)) = 0) THEN
 									timeout.tv_sec := msTimeOut DIV 1000; timeout.tv_usec := (msTimeOut MOD 1000) * 1000;
 									ri := unix.select (connectionNr + 1, readX11, NIL, NIL, timeout); ASSERT (ri # -1);
 									IF ri = 0 THEN _type := EventTimeOut; ev[1] := 0; ev[2] := 0; ev[3] := 0; ev[4] := 0 END;
 						 END;
 						 IF _type = 0 THEN
-									XNextEvent (display, SYSTEM.ADR(event));
+									mScr.XNextEvent (mScr.Display(screen), SYSTEM.ADR(event));
 									CASE readInt (event, 0) OF
 									Expose :
 											  x := readInt (event, 5 + 5 * bit64); y := readInt (event, 6 + 5 * bit64);
 											  w := readInt (event, 7 + 5 * bit64); h := readInt (event, 8 + 5 * bit64);
-											  XPutImage (display, window, gc, img, x, y, x, y, w, h);
+											  mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), x, y, x, y, w, h);
 									| ConfigureNotify :
 											  w := readInt (event, 8 + 6 * bit64); h := readInt (event, 9 + 6 * bit64);
 											  IF (w # winWidth) & (h # winHeight) THEN
 														 ASSERT ((w >= 0) & (h >= 0));
-														 IF w > ScreenWidth THEN w := ScreenWidth END;
-														 IF h > ScreenHeight THEN h := ScreenHeight END;
+														 IF w > mScr.Width(screen) THEN w := mScr.Width(screen) END;
+														 IF h > mScr.Height(screen) THEN h := mScr.Height(screen) END;
 														 winWidth := w; winHeight := h;
 														 ev[0] := EventResize; ev[1] := 0; ev[2] := w; ev[3] := h; ev[4] := 0;
 											  END;
 									| KeyPress :
 											  _type := EventKeyPressed;
-											  x := XLookupString (SYSTEM.ADR(event), 0, 0, SYSTEM.ADR(n), 0);  (* KeySym *)
+											  x := mScr.XLookupString (SYSTEM.ADR(event), 0, 0, SYSTEM.ADR(n), 0);  (* KeySym *)
 											  IF (n = 8) OR (n = 10) OR (n >= 32) & (n <= 126) THEN ev[1] := 1 ELSE ev[1] := 0; n := 0 END;  (* isprint *)
 											  ev[2] := readInt (event, 13 + 8 * bit64); (* keycode *)
 											  ev[3] := readInt (event, 12 + 8 * bit64); (* state *)
@@ -227,7 +214,7 @@ PROCEDURE clear* (color :INTEGER);   (* fill window area with color *)
 	VAR p, i, j :INTEGER;
 	BEGIN
 			  FOR j := 0 TO winHeight-1 DO
-						 p := base + j*stride;
+						 p := mScr.Base(screen) + j*mScr.Stride(screen);
 						 FOR i := 0 TO winWidth-1 DO SYSTEM.PUT32 (p, color); INC (p, 4) END
 			  END
 	END clear;
@@ -283,27 +270,6 @@ PROCEDURE clear* (color :INTEGER);   (* fill window area with color *)
 	*)
 
 
-BEGIN (* Инициализация X11 *)
-        libX11 := unix.dlopen (SYSTEM.SADR("libX11.so.6"), unix.RTLD_LAZY);
-        ASSERT (libX11 # 0);
-        getSymAdr (libX11, "XOpenDisplay", SYSTEM.ADR(XOpenDisplay));
-        getSymAdr (libX11, "XCloseDisplay", SYSTEM.ADR(XCloseDisplay));
-        getSymAdr (libX11, "XSynchronize", SYSTEM.ADR(XSynchronize));
-        getSymAdr (libX11, "XConnectionNumber", SYSTEM.ADR(XConnectionNumber));
-        getSymAdr (libX11, "XCreateWindow", SYSTEM.ADR(XCreateWindow));
-        getSymAdr (libX11, "XDefaultScreen", SYSTEM.ADR(XDefaultScreen));
-        getSymAdr (libX11, "XDefaultGC", SYSTEM.ADR(XDefaultGC));
-        getSymAdr (libX11, "XDisplayWidth", SYSTEM.ADR(XDisplayWidth));
-        getSymAdr (libX11, "XDisplayHeight", SYSTEM.ADR(XDisplayHeight));
-        getSymAdr (libX11, "XDefaultVisual", SYSTEM.ADR(XDefaultVisual));
-        getSymAdr (libX11, "XDefaultRootWindow", SYSTEM.ADR(XDefaultRootWindow));
-        getSymAdr (libX11, "XDefaultDepth", SYSTEM.ADR(XDefaultDepth));
-        getSymAdr (libX11, "XSelectInput", SYSTEM.ADR(XSelectInput));
-        getSymAdr (libX11, "XMapWindow", SYSTEM.ADR(XMapWindow));
-        getSymAdr (libX11, "XNextEvent", SYSTEM.ADR(XNextEvent));
-        getSymAdr (libX11, "XPending", SYSTEM.ADR(XPending));
-        getSymAdr (libX11, "XLookupString", SYSTEM.ADR(XLookupString));
-        getSymAdr (libX11, "XCreateImage", SYSTEM.ADR(XCreateImage));
-        getSymAdr (libX11, "XPutImage", SYSTEM.ADR(XPutImage));
-        init;
+BEGIN 
+   screen := init();
 END xgraph.

@@ -1,7 +1,8 @@
 MODULE square; (* Отображает квадрат заданным цветом и размером *)
 
 IMPORT SYSTEM,
-	mGr := xgraph;
+	mGr := xgraph,
+	mScr := screen;
 
 CONST
 	Side* = 8;  (* Количество пикселей в размере прямоугольника *)
@@ -43,7 +44,7 @@ PROCEDURE Draw*(square :TSquare); (* Рисует прямоугольник з�
 		p, i, j :INTEGER;
 	BEGIN
 		p := (square.y*stride + square.x*4)*Side;
-		ASSERT (p + (Side-1)*stride + (Side-1)*4 <= screenBufSize);
+		ASSERT (p + (Side-1)*mScr.Stride(mGr.screen) + (Side-1)*4 <= screenBufSize);
 		p := base + p;
 		FOR j := 0 TO Side-1 DO
 			FOR i := 0 TO Side-1 DO 
@@ -55,8 +56,8 @@ PROCEDURE Draw*(square :TSquare); (* Рисует прямоугольник з�
 	END Draw;
 
 BEGIN
-	base := mGr.base;
+	base := mScr.Base(mGr.screen);
 	mGr.createWindow (800, 480);
-	stride := mGr.stride;
+	stride := mScr.Stride(mGr.screen);
 	screenBufSize := mGr.winHeight * stride
 END square.
