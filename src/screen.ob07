@@ -111,6 +111,13 @@ PROCEDURE PaintingReset*(screen :TScreen);
 		screen.painting := FALSE
 	END PaintingReset;
 
+PROCEDURE Begin*(screen :TScreen);
+        (* intended to enable future cooperation with iOS / MacOS *)
+	BEGIN
+		ASSERT (~screen.painting);
+		PaintingSet(screen)
+	END Begin;
+
 PROCEDURE Finish*(screen :TScreen); (* Завершение работы экрана *)
 	VAR ri :INTEGER;
 	BEGIN

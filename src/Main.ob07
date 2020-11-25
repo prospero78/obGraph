@@ -55,7 +55,7 @@ PROCEDURE turtlePicture (x , y : INTEGER);(* Рисует картинку че�
 
 PROCEDURE screenUpdate;(* Отрисовка всего кадра *)
 	BEGIN
-		mGr.screenBegin;
+		mGr.Begin;
 		mGr.clear (0C0F0FFH);  (* light blue *)
 		turtlePicture (currentX, 15);
 		mGr.screenEnd;
