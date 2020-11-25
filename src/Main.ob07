@@ -38,6 +38,7 @@ PROCEDURE linePut (x : INTEGER; y: INTEGER;sample : ARRAY OF CHAR);
 	END linePut;
 
 
+(* Рисует картинку черепашки ил строк и литер *)
 PROCEDURE turtlePicture (x , y : INTEGER);
 	BEGIN
 	  linePut(x, y + 0 , "....bb........");
@@ -55,38 +56,44 @@ PROCEDURE turtlePicture (x , y : INTEGER);
 	END turtlePicture;
 
 
-PROCEDURE drawAll;
+(* Отрисовка всего кадра *)
+PROCEDURE screenUpdate;
 	BEGIN
 			  mGr.screenBegin;
 			  mGr.clear (0C0F0FFH);  (* light blue *)
 			  turtlePicture (currentX, 15);
 			  mGr.screenEnd;
-	END drawAll;
+	END screenUpdate;
 
 
 (* Главный цикл работы анимации *)
 PROCEDURE MainLoop;
-	VAR stop :BOOLEAN;
-			  ev :mGr.EventPars;
-			  ch :CHAR;
+	VAR
+		isStop :BOOLEAN;
+		ev :mGr.EventPars;
+		ch :CHAR;
 	BEGIN
-			  stop := FALSE; currentX := 15;
-			  square := mSqr.New(Side);
-			  drawAll;
-			  REPEAT
-						 mGr.nextEvent (400, ev);
-						 IF ev[0] = mGr.EventTimeOut THEN
-									drawAll;
-									INC (currentX, 4);
-						 ELSIF ev[0] = mGr.EventKeyPressed THEN
-									ch := CHR(ev[4]);
-									IF (ch = "q") OR (ch = 0AX) OR (ch = " ") THEN stop := TRUE END;
-									IF ev[2] = 9 (* ESC *) THEN stop := TRUE END;
-						 END;
-			  UNTIL stop;
-			  mGr.finish;
+		isStop := FALSE; currentX := 15;
+		square := mSqr.New(Side);
+		screenUpdate;
+		REPEAT
+			mGr.nextEvent (400, ev);
+			IF ev[0] = mGr.EventTimeOut THEN
+				screenUpdate;
+				INC (currentX, 4);
+			ELSIF ev[0] = mGr.EventKeyPressed THEN
+				ch := CHR(ev[4]);
+				IF (ch = "q") OR (ch = 0AX) OR (ch = " ") THEN
+					isStop := TRUE
+				END;
+				IF ev[2] = 9 (* ESC *) THEN
+					isStop := TRUE
+				END;
+			END;
+		UNTIL isStop;
+		mGr.finish;
 	END MainLoop;
 
 BEGIN
-        MainLoop;
+	MainLoop;
 END animation.
