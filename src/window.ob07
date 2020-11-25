@@ -1,5 +1,7 @@
 MODULE window; (* Модуль предоставляет тип окна *)
 
+IMPORT SYSTEM;
+
 TYPE
    TWindow* = POINTER TO RECORD (* Тип окна для манипуляций *)
       width*    :INTEGER; (* draw by writing to pixel buffer: *)
@@ -27,6 +29,19 @@ PROCEDURE HeightSet*(win :TWindow; height :INTEGER); (* Устанавливае
    BEGIN
       win.height := height
    END HeightSet;
+
+PROCEDURE Fill* (win: TWindow; color, base, stride :INTEGER);   (* fill window area with color *)
+	VAR
+		p, i, j :INTEGER;
+	BEGIN
+		FOR j := 0 TO win.height-1 DO
+			p := base + j*stride;
+			FOR i := 0 TO win.width-1 DO
+				SYSTEM.PUT32 (p, color);
+            INC (p, 4)
+			END
+		END
+	END Fill;
 
 END window.
 

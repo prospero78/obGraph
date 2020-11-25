@@ -174,15 +174,8 @@ PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :mEvn.EventPars);
 
 
 PROCEDURE Fill* (color :INTEGER);   (* fill window area with color *)
-	VAR
-		p, i, j :INTEGER;
 	BEGIN
-		FOR j := 0 TO win.height-1 DO
-			p := screen.base + j*screen.stride;
-			FOR i := 0 TO win.width-1 DO
-				SYSTEM.PUT32 (p, color); INC (p, 4)
-			END
-		END
+		mWin.Fill(win, color, screen.base, screen.stride)
 	END Fill;
 
 PROCEDURE Finish*;
