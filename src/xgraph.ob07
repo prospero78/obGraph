@@ -40,14 +40,6 @@ VAR
 	screen* : mScr.TScreen;
 	win* :mWin.TWindow;
 
-PROCEDURE init():mScr.TScreen;
-	VAR
-		screen: mScr.TScreen;
-	BEGIN
-		screen := mScr.New();
-		RETURN screen
-	END init;
-
 PROCEDURE createWindow* (w, h :INTEGER);
 	VAR
 		eventMask :INTEGER;
@@ -236,5 +228,5 @@ PROCEDURE Finish*;
 
 
 BEGIN 
-   screen := init();
+	screen := mScr.New();
 END xgraph.
