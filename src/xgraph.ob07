@@ -40,49 +40,12 @@ VAR
 	screen* : mScr.TScreen;
 	win* :mWin.TWindow;
 
-PROCEDURE getSymAdr (lib :INTEGER; name :ARRAY OF CHAR; adr :INTEGER);
-	VAR sym :INTEGER;
-	BEGIN
-		sym := unix.dlsym (lib, SYSTEM.ADR(name[0]));
-		IF sym = 0 THEN out.formatStr ("error: dlsym: %", name); out.nl END;
-		ASSERT (sym # 0);
-		SYSTEM.PUT (adr, sym)
-	END getSymAdr;
-
-
 PROCEDURE init():mScr.TScreen;
 	VAR
 		screen: mScr.TScreen;
 	BEGIN
-		screen:=mScr.New();
+		screen := mScr.New();
 		RETURN screen
-		(*
-		display := XOpenDisplay (0);
-		IF display = 0 THEN
-			out.str ("ERROR: can not open X11 display.");
-			out.nl;
-			out.exit(1)
-		END;
-		(* ri := XSynchronize (display, 1); *)
-		connectionNr := XConnectionNumber (display);
-		ASSERT (connectionNr < unix.FD_SETSIZE);
-		NEW (readX11);
-		unix.FD_ZERO(readX11);
-		unix.FD_SET (connectionNr, readX11);
-		screen := XDefaultScreen (display);
-		gc := XDefaultGC (display, screen);
-		ScreenWidth := XDisplayWidth (display, screen);
-		ScreenHeight := XDisplayHeight (display, screen);
-		base := unix.malloc (ScreenWidth * ScreenHeight * 4);
-		IF base = 0 THEN
-			out.formatInt2 ("ERROR: can not allocate screen buffer % x %", ScreenWidth, ScreenHeight); out.nl;
-			out.exit(1);
-		END;
-		stride := ScreenWidth * 4;
-		img := XCreateImage (display, XDefaultVisual (display, screen),
-											XDefaultDepth (display, screen),
-											ZPixmap, 0, base, ScreenWidth, ScreenHeight, 32, 0);
-		*)
 	END init;
 
 
