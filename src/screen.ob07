@@ -111,6 +111,19 @@ PROCEDURE PaintingReset*(screen :TScreen);
 		screen.painting := FALSE
 	END PaintingReset;
 
+PROCEDURE Finish*(screen :TScreen); (* Завершение работы экрана *)
+	VAR ri :INTEGER;
+	BEGIN
+			IF screen.display # 0 THEN
+				XCloseDisplay(screen.display);
+				DisplaySet(screen, 0)
+			END;
+			IF libX11 # 0 THEN
+				ri := unix.dlclose (libX11);
+				SetXLib(0)
+			END;
+	END Finish;
+
 BEGIN(* Инициализация X11 *)
 	libX11 := unix.dlopen (SYSTEM.SADR("libX11.so.6"), unix.RTLD_LAZY);
 	ASSERT (libX11 # 0);

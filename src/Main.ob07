@@ -85,7 +85,7 @@ PROCEDURE MainLoop; (* Главный цикл работы анимации *)
 				END;
 			END;
 		UNTIL isStop;
-		mGr.finish;
+		mGr.Finish
 	END MainLoop;
 
 BEGIN

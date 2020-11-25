@@ -48,21 +48,6 @@ PROCEDURE init():mScr.TScreen;
 		RETURN screen
 	END init;
 
-
-PROCEDURE finish*;
-	VAR ri :INTEGER;
-	BEGIN
-			IF screen.display # 0 THEN
-				mScr.XCloseDisplay(screen.display);
-				mScr.DisplaySet(screen, 0)
-			END;
-			IF mScr.libX11 # 0 THEN
-				ri := unix.dlclose (mScr.libX11);
-				mScr.SetXLib(0)
-			END;
-	END finish;
-
-
 PROCEDURE createWindow* (w, h :INTEGER);
 	VAR
 		eventMask :INTEGER;
@@ -195,6 +180,10 @@ PROCEDURE clear* (color :INTEGER);   (* fill window area with color *)
 		END
 	END clear;
 
+PROCEDURE Finish*;
+	BEGIN 
+		mScr.Finish(screen)
+	END Finish;
 
 (*
 	PROCEDURE blitError (stride, x, y, w, h :INTEGER);
