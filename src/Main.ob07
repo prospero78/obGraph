@@ -1,4 +1,4 @@
-MODULE animation; (* Приме рпережвижения черепашки *)
+MODULE animation; (* Пример передвижения черепашки *)
  (* Демонстрация использования таймауту и select() 
 	для отображения и перемещения черепашки в окне X11 *)
 
@@ -13,14 +13,14 @@ VAR
 	currentX :INTEGER;
 	square: mSqr.TSquare;
 
-PROCEDURE DrawAttr(color, x, y :INTEGER);
+PROCEDURE DrawAttr(color, x, y :INTEGER); (* отрисовывает квадрат с нужным цветом, в нужной позиции *)
 	BEGIN
 		mSqr.ColorSet(square, color);
 		mSqr.CoordSet(square, x, y);
 		mSqr.Draw(square)
 	END DrawAttr;
 
-PROCEDURE linePut (x : INTEGER; y: INTEGER;sample : ARRAY OF CHAR);
+PROCEDURE linePut (x : INTEGER; y: INTEGER;sample : ARRAY OF CHAR); (* рисует строковую линию из состава черепашки *)
 	VAR z, x1: INTEGER;
 	BEGIN
 		FOR z := 0 TO LEN(sample) - 1 DO
@@ -37,9 +37,7 @@ PROCEDURE linePut (x : INTEGER; y: INTEGER;sample : ARRAY OF CHAR);
 	  END;
 	END linePut;
 
-
-(* Рисует картинку черепашки ил строк и литер *)
-PROCEDURE turtlePicture (x , y : INTEGER);
+PROCEDURE turtlePicture (x , y : INTEGER);(* Рисует картинку черепашки ил строк и литер *)
 	BEGIN
 	  linePut(x, y + 0 , "....bb........");
 	  linePut(x, y + 1 , "....bbb.......");
@@ -55,9 +53,7 @@ PROCEDURE turtlePicture (x , y : INTEGER);
 	  linePut(x, y + 11, ".....bb.......")
 	END turtlePicture;
 
-
-(* Отрисовка всего кадра *)
-PROCEDURE screenUpdate;
+PROCEDURE screenUpdate;(* Отрисовка всего кадра *)
 	BEGIN
 			  mGr.screenBegin;
 			  mGr.clear (0C0F0FFH);  (* light blue *)
@@ -65,9 +61,7 @@ PROCEDURE screenUpdate;
 			  mGr.screenEnd;
 	END screenUpdate;
 
-
-(* Главный цикл работы анимации *)
-PROCEDURE MainLoop;
+PROCEDURE MainLoop; (* Главный цикл работы анимации *)
 	VAR
 		isStop :BOOLEAN;
 		ev :mGr.EventPars;

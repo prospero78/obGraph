@@ -1,0 +1,71 @@
+MODULE screen; (* Модуль предоставляет тип для описания экрана X11 *)
+
+IMPORT SYSTEM,
+	out,
+	unix;
+
+
+CONST
+	ZPixmap = 2;
+
+TYPE
+	TScreen* = POINTER TO RECORD (* Тип экрана с полями для успешной работы *)
+		x11		:INTEGER; (* номер оригинального экрана *)
+		width		:INTEGER;
+		height   :INTEGER;
+		numConnect	:INTEGER;     (* fd of X11 socket *)
+		readX11	:unix.fd_set; (* used by select() timeout on X11 socket *)
+		xDefault :INTEGER;
+		base		:INTEGER;
+		surface	:INTEGER;
+		gc			:INTEGER;
+		stride	:INTEGER
+	END;
+
+VAR
+	XDefaultScreen :PROCEDURE [linux] (display :INTEGER) :INTEGER;
+	XOpenDisplay :PROCEDURE [linux] (name :INTEGER) :INTEGER;
+	XConnectionNumber :PROCEDURE [linux] (display :INTEGER) :INTEGER;
+	XDefaultGC :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;  (* GC *)
+	XDisplayWidth :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
+   XDisplayHeight :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
+   XDefaultDepth :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;
+   XDefaultVisual :PROCEDURE [linux] (display, screenNr :INTEGER) :INTEGER;  (* visual *)
+   XCreateImage :PROCEDURE [linux] (display, visual, depth, format, offset, data,
+                width, height, bitmap_pad, bytes_per_line :INTEGER) :INTEGER; (* ptr to XImage *)
+
+PROCEDURE New():TScreen; (* создаёт новый экран *)
+	VAR
+		screen     :TScreen;
+	BEGIN
+		NEW(screen);
+		screen.x11 := XOpenDisplay(0);
+		IF screen.x11 = 0 THEN
+			out.str ("ERROR: can not open X11 display.");
+			out.nl;
+			out.exit(1)
+		END;
+		(* ri := XSynchronize (display, 1); *)
+		screen.numConnect := XConnectionNumber (screen.x11);
+		ASSERT (screen.numConnect < unix.FD_SETSIZE);
+		NEW (screen.readX11);
+		unix.FD_ZERO(screen.readX11);
+		unix.FD_SET (screen.numConnect, screen.readX11);
+		screen.xDefault := XDefaultScreen(screen.x11);
+		screen.gc := XDefaultGC (screen.x11, screen.xDefault);
+		screen.width := XDisplayWidth (screen.x11, screen.xDefault);
+		screen.height := XDisplayHeight (screen.x11, screen.xDefault);
+		screen.base := unix.malloc (screen.width * screen.height * 4);
+		IF screen.base = 0 THEN
+			out.formatInt2 ("ERROR: can not allocate screen buffer % x %", screen.width, screen.height); out.nl;
+			out.exit(1);
+		END;
+		screen.stride := screen.width * 4;
+		screen.surface := XCreateImage (screen.x11,
+					XDefaultVisual(screen.x11, screen.xDefault),
+					XDefaultDepth (screen.x11, screen.xDefault),
+					ZPixmap, 0, screen.base, screen.width, screen.height, 32, 0);
+		RETURN screen
+	END New;
+
+END screen.

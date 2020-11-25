@@ -18,8 +18,7 @@ VAR
 	stride :INTEGER;
 	screenBufSize :INTEGER; (* размер буфера экрана *)
 
-(* Создаёт новый прямоугольник для рисования *)
-PROCEDURE New*(size: INTEGER):TSquare;
+PROCEDURE New*(size: INTEGER):TSquare; (* Создаёт новый прямоугольник для рисования *)
 	VAR
 		square:TSquare;
 	BEGIN
@@ -28,8 +27,7 @@ PROCEDURE New*(size: INTEGER):TSquare;
 		RETURN square
 	END New; 
 
-(* Устанавливает координаты для рисования у прямоугольника *)
-PROCEDURE CoordSet*(square:TSquare; x,y:INTEGER);
+PROCEDURE CoordSet*(square:TSquare; x,y:INTEGER); (* Устанавливает координаты для рисования у прямоугольника *)
 	BEGIN
 		square.x := x;
 		square.y := y
@@ -40,8 +38,7 @@ PROCEDURE ColorSet*(square:TSquare; color :INTEGER);
 		square.color := color
 	END ColorSet;
 
-(* Рисует прямоугольник заданного размера *)
-PROCEDURE Draw*(square :TSquare);
+PROCEDURE Draw*(square :TSquare); (* Рисует прямоугольник заданного размера *)
 	VAR 
 		p, i, j :INTEGER;
 	BEGIN
