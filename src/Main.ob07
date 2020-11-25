@@ -4,7 +4,8 @@ MODULE Main; (* Пример передвижения черепашки *)
 
 IMPORT SYSTEM, 
 	mGr := xgraph,
-	mSqr := square;
+	mSqr := square,
+	mEvn := event;
 
 CONST
 	Side = 8;  (* nr of pixels of a square side *)
@@ -64,7 +65,7 @@ PROCEDURE screenUpdate;(* Отрисовка всего кадра *)
 PROCEDURE MainLoop; (* Главный цикл работы анимации *)
 	VAR
 		isStop :BOOLEAN;
-		ev :mGr.EventPars;
+		ev :mEvn.EventPars;
 		ch :CHAR;
 	BEGIN
 		isStop := FALSE; currentX := 15;

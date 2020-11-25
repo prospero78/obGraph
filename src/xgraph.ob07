@@ -10,7 +10,8 @@ IMPORT
 	unix, 
 	out,
 	mScr := screen,
-	mWin := window;
+	mWin := window,
+	mEvn := event;
 
 CONST
 		InputOutput = 1;
@@ -30,11 +31,7 @@ CONST
 
 		bit64 = ORD(unix.BIT_DEPTH = 64);
 
-TYPE EventPars* = ARRAY 5 OF INTEGER;
-			XEvent = RECORD
-				val :ARRAY 192 OF BYTE          (* union { ..., long pad[24]; } *)
-					(* val :ARRAY 48 OF CARD32; *)
-		END;
+
 
 VAR
 	screen* : mScr.TScreen;
@@ -71,7 +68,7 @@ PROCEDURE End*;
 	END End;
 
 
-PROCEDURE readInt (e :XEvent; i :INTEGER) :INTEGER;
+PROCEDURE readInt (e :mEvn.TEventX; i :INTEGER) :INTEGER;
         (* treat XEvent byte array as int array *)
 	VAR n :INTEGER;
 	BEGIN
@@ -83,9 +80,9 @@ PROCEDURE readInt (e :XEvent; i :INTEGER) :INTEGER;
 	END readInt;
 
 
-PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :EventPars);
+PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :mEvn.EventPars);
 	VAR _type, n, ri :INTEGER;
-		event :XEvent;
+		event :mEvn.TEventX;
 		x, y, w, h :INTEGER;
 		timeout :unix.timespec;
 	BEGIN

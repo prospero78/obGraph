@@ -1,0 +1,11 @@
+MODULE event; (* События от X11 *)
+
+TYPE
+   EventPars* = ARRAY 5 OF INTEGER;
+   
+   TEventX* = RECORD
+      val* :ARRAY 192 OF BYTE (* union { ..., long pad[24]; } *)
+            (* val :ARRAY 48 OF CARD32; *)
+   END;
+
+END event.
