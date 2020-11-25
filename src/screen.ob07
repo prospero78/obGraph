@@ -19,7 +19,9 @@ TYPE
 		base*		:INTEGER;
 		surface*	:INTEGER;
 		gc*		:INTEGER;
-		stride*	:INTEGER   (* width, height, base ptr, stride in bytes, 32-bit RGB *)
+		stride*	:INTEGER;  (* width, height, base ptr, stride in bytes, 32-bit RGB *)
+		painting*	:BOOLEAN
+
 	END;
 
 VAR
@@ -99,6 +101,15 @@ PROCEDURE getSymAdr (lib :INTEGER; name :ARRAY OF CHAR; adr :INTEGER);
 			  SYSTEM.PUT (adr, sym)
 	END getSymAdr;
 
+PROCEDURE PaintingSet*(screen :TScreen);
+	BEGIN 
+		screen.painting := TRUE
+	END PaintingSet;
+
+PROCEDURE PaintingReset*(screen :TScreen);
+	BEGIN 
+		screen.painting := FALSE
+	END PaintingReset;
 
 BEGIN(* Инициализация X11 *)
 	libX11 := unix.dlopen (SYSTEM.SADR("libX11.so.6"), unix.RTLD_LAZY);

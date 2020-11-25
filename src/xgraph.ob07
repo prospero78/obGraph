@@ -39,7 +39,6 @@ TYPE EventPars* = ARRAY 5 OF INTEGER;
 VAR
 	screen* : mScr.TScreen;
 	win* :mWin.TWindow;
-   painting :BOOLEAN;
 
    _screen :INTEGER;
    connectionNr :INTEGER; (* fd of X11 socket *)
@@ -127,15 +126,16 @@ PROCEDURE createWindow* (w, h :INTEGER);
 PROCEDURE screenBegin*;
         (* intended to enable future cooperation with iOS / MacOS *)
 	BEGIN
-		ASSERT (~painting); painting := TRUE
+		ASSERT (~screen.painting);
+		mScr.PaintingSet(screen)
 	END screenBegin;
 
 
 PROCEDURE screenEnd*;
 	BEGIN
-		ASSERT (painting);
+		ASSERT (screen.painting);
 		mScr.XPutImage (screen.display, win.number, screen.gc, screen.surface, 0, 0, 0, 0, win.width, win.height);
-		painting := FALSE;
+		mScr.PaintingReset(screen)
 	END screenEnd;
 
 
