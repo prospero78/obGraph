@@ -1,0 +1,59 @@
+MODULE square; (* Отображает квадрат заданным цветом и размером *)
+
+IMPORT SYSTEM;
+
+CONST
+	Side* = 8;  (* Количество пикселей в размере прямоугольника *)
+
+TYPE
+	TSquare* = POINTER TO RECORD (* Прямоугольник для рисования *)
+		color: INTEGER;
+		x, y:  INTEGER;
+		size:  INTEGER
+	END;
+
+VAR
+	stride* :INTEGER;
+	screenBufSize* :INTEGER; (* размер буфера экрана *)
+	base* :INTEGER;
+
+(* Создаёт новый прямоугольник для рисования *)
+PROCEDURE New*(color, size: INTEGER):TSquare;
+	VAR
+		square:TSquare;
+	BEGIN
+		NEW(square);
+		square.color := color;
+		square.size  := size;
+		RETURN square
+	END New; 
+
+(* Устанавливает координаты для рисования у прямоугольника *)
+PROCEDURE CoordSet*(square:TSquare; x,y:INTEGER);
+	BEGIN
+		square.x := x;
+		square.y := y
+	END CoordSet;
+
+PROCEDURE ColorSet*(square:TSquare; color :INTEGER);
+	BEGIN
+		square.color := color
+	END ColorSet;
+
+(* Рисует прямоугольник заданного размера *)
+PROCEDURE Draw*(square :TSquare);
+	VAR 
+		p, i, j :INTEGER;
+	BEGIN
+		p := (square.y*stride + square.x*4)*Side;
+		ASSERT (p + (Side-1)*stride + (Side-1)*4 <= screenBufSize);
+		p := base + p;
+		FOR j := 0 TO Side-1 DO
+			FOR i := 0 TO Side-1 DO 
+				SYSTEM.PUT32 (p, square.color);
+				INC(p, 4) 
+			END;
+		p := p + stride - Side*4;
+		END;
+	END Draw;
+END square.
