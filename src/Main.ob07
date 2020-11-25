@@ -58,18 +58,18 @@ PROCEDURE turtlePicture (x , y : INTEGER);(* Рисует картинку че�
 
 PROCEDURE turtlePicture2 (x , y : INTEGER);(* Рисует картинку черепашки ил строк и литер *)
 	BEGIN
-		linePut(x, y + 0 , "..bb..........");
-		linePut(x, y + 1 , "...bbb........");
-		linePut(x, y + 2 , "...bbbb.......");
-		linePut(x, y + 3 , ".bb..bbb......");
-		linePut(x, y + 4 , "bbgggbbbgbbgb.");
-		linePut(x, y + 5 , ".gggrrrggbbbb.");
-		linePut(x, y + 6 , ".ggrrrrggbbbbg");
-		linePut(x, y + 7 , ".ggggggg......");
-		linePut(x, y + 8 , ".bb..bbb......");
-		linePut(x, y + 9 , "....bbbb......");
-		linePut(x, y + 10, "....bbb.......");
-		linePut(x, y + 11, "...bb.........")
+		linePut(x, y + 2 , "..bb..........");
+		linePut(x, y + 3 , "...bbb........");
+		linePut(x, y + 4 , "...bbbb.......");
+		linePut(x, y + 5 , ".bb..bbb......");
+		linePut(x, y + 6 , "bbgggbbbgbbgb.");
+		linePut(x, y + 7, ".gggrrrggbbbb.");
+		linePut(x, y + 8, ".ggrrrrggbbbbg");
+		linePut(x, y + 9, ".ggggggg......");
+		linePut(x, y + 10, ".bb..bbb......");
+		linePut(x, y + 11, "....bbbb......");
+		linePut(x, y + 12, "....bbb.......");
+		linePut(x, y + 13, "...bb.........")
 	END turtlePicture2;
 
 PROCEDURE screenUpdate;(* Отрисовка всего кадра *)
