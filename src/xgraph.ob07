@@ -38,8 +38,7 @@ TYPE EventPars* = ARRAY 5 OF INTEGER;
 
 VAR
 	screen* : mScr.TScreen;
-	win :mWin.TWindow;
-   winHeight* :INTEGER; (* draw by writing to pixel buffer: *)
+	win* :mWin.TWindow;
    painting :BOOLEAN;
 
    _screen, window :INTEGER;
@@ -120,7 +119,6 @@ PROCEDURE createWindow* (w, h :INTEGER);
 		
 		
 		win := mWin.New(w, h);
-		winHeight := h;
 		eventMask := StructureNotifyMask + ExposureMask + KeyPressMask + ButtonPressMask;
 		mScr.XSelectInput (mScr.Display(screen), window, eventMask);
 		mScr.XMapWindow (mScr.Display(screen), window);
@@ -137,7 +135,7 @@ PROCEDURE screenBegin*;
 PROCEDURE screenEnd*;
 	BEGIN
 		ASSERT (painting);
-		mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), 0, 0, 0, 0, mWin.Width(win), winHeight);
+		mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), 0, 0, 0, 0, win.width, win.height);
 		painting := FALSE;
 	END screenEnd;
 
@@ -188,12 +186,16 @@ PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :EventPars);
 											  mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), x, y, x, y, w, h);
 									| ConfigureNotify :
 											  w := readInt (event, 8 + 6 * bit64); h := readInt (event, 9 + 6 * bit64);
-											  IF (w # mWin.Width(win)) & (h # winHeight) THEN
+											  IF (w # win.width) & (h # win.height) THEN
 														 ASSERT ((w >= 0) & (h >= 0));
-														 IF w > mScr.Width(screen) THEN w := mScr.Width(screen) END;
-														 IF h > mScr.Height(screen) THEN h := mScr.Height(screen) END;
-														 mWin.WidthSet(win, w); winHeight := h;
-														 ev[0] := EventResize; ev[1] := 0; ev[2] := w; ev[3] := h; ev[4] := 0;
+														IF w > mScr.Width(screen) THEN
+														 	w := mScr.Width(screen)
+														END;
+														IF h > mScr.Height(screen) THEN
+															h := mScr.Height(screen)
+														END;
+														mWin.WidthSet(win, w); mWin.HeightSet(win, h);
+														ev[0] := EventResize; ev[1] := 0; ev[2] := w; ev[3] := h; ev[4] := 0;
 											  END;
 									| KeyPress :
 											  _type := EventKeyPressed;
@@ -220,9 +222,9 @@ PROCEDURE clear* (color :INTEGER);   (* fill window area with color *)
 	VAR
 		p, i, j :INTEGER;
 	BEGIN
-		FOR j := 0 TO mWin.Height(win)-1 DO
+		FOR j := 0 TO win.height-1 DO
 			p := mScr.Base(screen) + j*mScr.Stride(screen);
-			FOR i := 0 TO mWin.Width(win)-1 DO
+			FOR i := 0 TO win.width-1 DO
 				SYSTEM.PUT32 (p, color); INC (p, 4)
 			END
 		END
