@@ -1,4 +1,4 @@
-﻿MODULE gr;     (* connect to libX11 *)
+﻿MODULE xgraph;     (* connect to libX11 *)
 
 IMPORT 
 	SYSTEM, 
@@ -292,4 +292,4 @@ BEGIN
         getSymAdr (libX11, "XCreateImage", SYSTEM.ADR(XCreateImage));
         getSymAdr (libX11, "XPutImage", SYSTEM.ADR(XPutImage));
         init;
-END gr.
+END xgraph.

@@ -3,7 +3,7 @@ MODULE animation; (* Приме рпережвижения черепашки *)
 	для отображения и перемещения черепашки в окне X11 *)
 
 IMPORT SYSTEM, 
-	mGr := gr,
+	mGr := xgraph,
 	mSqr := square;
 
 CONST
