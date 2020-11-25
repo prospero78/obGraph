@@ -3,16 +3,18 @@ MODULE window; (* Модуль предоставляет тип окна *)
 TYPE
    TWindow* = POINTER TO RECORD (* Тип окна для манипуляций *)
       width*    :INTEGER; (* draw by writing to pixel buffer: *)
-      height*   :INTEGER  (* draw by writing to pixel buffer: *)
+      height*   :INTEGER; (* draw by writing to pixel buffer: *)
+      number*    :INTEGER  (* номер окна *)
    END;
 
-PROCEDURE New*(width, height:INTEGER):TWindow; (* Возвращает новое окно *)
+PROCEDURE New*(width, height, number :INTEGER):TWindow; (* Возвращает новое окно *)
    VAR
       win   :TWindow;
    BEGIN
       NEW(win);
       win.height := height;
       win.width  := width;
+      win.number := number;
       RETURN win
    END New;
 

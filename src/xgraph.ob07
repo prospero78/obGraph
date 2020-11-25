@@ -41,7 +41,7 @@ VAR
 	win* :mWin.TWindow;
    painting :BOOLEAN;
 
-   _screen, window :INTEGER;
+   _screen :INTEGER;
    connectionNr :INTEGER; (* fd of X11 socket *)
    readX11 :unix.fd_set;  (* used by select() timeout on X11 socket *)
 
@@ -107,21 +107,21 @@ PROCEDURE finish*;
 
 
 PROCEDURE createWindow* (w, h :INTEGER);
-	VAR eventMask :INTEGER;
+	VAR
+		eventMask :INTEGER;
+		winNumber :INTEGER;
 	BEGIN
 		IF (w > mScr.Width(screen)) OR (h > mScr.Height(screen)) THEN
 			out.str ("error: X11.createWindow: window too large"); out.exit(1);
 		END;
 		ASSERT ((w >= 0) & (h >= 0));
-		window := mScr.XCreateWindow (mScr.Display(screen), mScr.XDefaultRootWindow (mScr.Display(screen)), 0, 0, w, h, 0,
+		winNumber := mScr.XCreateWindow (mScr.Display(screen), mScr.XDefaultRootWindow (mScr.Display(screen)), 0, 0, w, h, 0,
 							mScr.XDefaultDepth (mScr.Display(screen), _screen), InputOutput, mScr.XDefaultVisual (mScr.Display(screen), _screen), 0, 0);
 		
-		
-		
-		win := mWin.New(w, h);
+		win := mWin.New(w, h, winNumber);
 		eventMask := StructureNotifyMask + ExposureMask + KeyPressMask + ButtonPressMask;
-		mScr.XSelectInput (mScr.Display(screen), window, eventMask);
-		mScr.XMapWindow (mScr.Display(screen), window);
+		mScr.XSelectInput (mScr.Display(screen), win.number, eventMask);
+		mScr.XMapWindow (mScr.Display(screen), win.number);
 	END createWindow;
 
 
@@ -135,7 +135,7 @@ PROCEDURE screenBegin*;
 PROCEDURE screenEnd*;
 	BEGIN
 		ASSERT (painting);
-		mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), 0, 0, 0, 0, win.width, win.height);
+		mScr.XPutImage (mScr.Display(screen), win.number, mScr.Gc(screen), mScr.Img(screen), 0, 0, 0, 0, win.width, win.height);
 		painting := FALSE;
 	END screenEnd;
 
@@ -183,7 +183,7 @@ PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :EventPars);
 									Expose :
 											  x := readInt (event, 5 + 5 * bit64); y := readInt (event, 6 + 5 * bit64);
 											  w := readInt (event, 7 + 5 * bit64); h := readInt (event, 8 + 5 * bit64);
-											  mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), x, y, x, y, w, h);
+											  mScr.XPutImage (mScr.Display(screen), win.number, mScr.Gc(screen), mScr.Img(screen), x, y, x, y, w, h);
 									| ConfigureNotify :
 											  w := readInt (event, 8 + 6 * bit64); h := readInt (event, 9 + 6 * bit64);
 											  IF (w # win.width) & (h # win.height) THEN
