@@ -40,7 +40,6 @@ VAR
 	screen* : mScr.TScreen;
 	win* :mWin.TWindow;
 
-   _screen :INTEGER;
    connectionNr :INTEGER; (* fd of X11 socket *)
 
 
@@ -114,7 +113,7 @@ PROCEDURE createWindow* (w, h :INTEGER);
 		END;
 		ASSERT ((w >= 0) & (h >= 0));
 		winNumber := mScr.XCreateWindow(screen.display, mScr.XDefaultRootWindow (screen.display), 0, 0, w, h, 0,
-							mScr.XDefaultDepth (screen.display, _screen), InputOutput, mScr.XDefaultVisual (screen.display, _screen), 0, 0);
+							mScr.XDefaultDepth (screen.display, screen.screen), InputOutput, mScr.XDefaultVisual (screen.display, screen.screen), 0, 0);
 		
 		win := mWin.New(w, h, winNumber);
 		eventMask := StructureNotifyMask + ExposureMask + KeyPressMask + ButtonPressMask;

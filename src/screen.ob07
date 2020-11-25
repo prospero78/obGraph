@@ -15,7 +15,7 @@ TYPE
 		height*  :INTEGER;
 		connectionNr	:INTEGER;     (* fd of X11 socket *)
 		readX11*	:unix.fd_set; (* used by select() timeout on X11 socket *)
-		screen	:INTEGER;
+		screen*	:INTEGER;
 		base*		:INTEGER;
 		surface*	:INTEGER;
 		gc*		:INTEGER;
