@@ -1,0 +1,36 @@
+MODULE window; (* Модуль предоставляет тип окна *)
+
+TYPE
+   TWindow* = POINTER TO RECORD (* Тип окна для манипуляций *)
+      width    :INTEGER; (* draw by writing to pixel buffer: *)
+      height   :INTEGER
+   END;
+
+PROCEDURE New*(width, height:INTEGER):TWindow; (* Возвращает новое окно *)
+   VAR
+      win   :TWindow;
+   BEGIN
+      NEW(win);
+      win.height := height;
+      win.width  := width;
+      RETURN win
+   END New;
+
+PROCEDURE Width*(win :TWindow):INTEGER; (* Возвращает ширину окна *)
+   BEGIN
+      RETURN win.width
+   END Width;
+
+PROCEDURE WidthSet*(win :TWindow; width :INTEGER); (* Устанавливает ширину окна *)
+   BEGIN
+      win.width := width
+   END WidthSet;
+
+PROCEDURE Height*(win :TWindow):INTEGER; (* Возвращает высоту окна *)
+   BEGIN
+      RETURN win.height
+   END Height;
+
+END window.
+
+

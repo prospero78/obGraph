@@ -9,35 +9,37 @@ IMPORT
 	SYSTEM, 
 	unix, 
 	out,
-	mScr := screen;
+	mScr := screen,
+	mWin := window;
 
 CONST
-        InputOutput = 1;
-        StructureNotifyMask = 20000H;  (* input event mask *)
-        ExposureMask = 8000H; KeyPressMask = 1; KeyReleaseMask = 2;
-        ButtonPressMask = 4; ButtonReleaseMask = 8; (* PointerNotionMask *)
-        ZPixmap = 2;
-        Expose = 12;  (* X event type *) ConfigureNotify = 22; KeyPress = 2; ButtonPress = 4;
+		InputOutput = 1;
+		StructureNotifyMask = 20000H;  (* input event mask *)
+		ExposureMask = 8000H; KeyPressMask = 1; KeyReleaseMask = 2;
+		ButtonPressMask = 4; ButtonReleaseMask = 8; (* PointerNotionMask *)
+		ZPixmap = 2;
+		Expose = 12;  (* X event type *) ConfigureNotify = 22; KeyPress = 2; ButtonPress = 4;
 
-        EventTimeOut* = 80;    (* 0, 0, 0, 0 *)
-        EventResize* = 81;    (* 0, w, h, 0 *)
-        EventKeyPressed* = 82;    (* isPrintable, keyCode (X11 scan code), state, keySym (ASCII) *)
-        EventKeyReleased* = 83;    (* 0, keyCode, state, 0 *)
-        EventButtonPressed* = 84;    (* button, x, y, state *)
-        EventButtonReleased* = 85;    (* button, x, y, state *)
-        (* mouse button 1-5 = Left, Middle, Right, Scroll wheel up, Scroll wheel down *)
+		EventTimeOut* = 80;    (* 0, 0, 0, 0 *)
+		EventResize* = 81;    (* 0, w, h, 0 *)
+		EventKeyPressed* = 82;    (* isPrintable, keyCode (X11 scan code), state, keySym (ASCII) *)
+		EventKeyReleased* = 83;    (* 0, keyCode, state, 0 *)
+		EventButtonPressed* = 84;    (* button, x, y, state *)
+		EventButtonReleased* = 85;    (* button, x, y, state *)
+			(* mouse button 1-5 = Left, Middle, Right, Scroll wheel up, Scroll wheel down *)
 
-        bit64 = ORD(unix.BIT_DEPTH = 64);
+		bit64 = ORD(unix.BIT_DEPTH = 64);
 
 TYPE EventPars* = ARRAY 5 OF INTEGER;
-        XEvent = RECORD
-                val :ARRAY 192 OF BYTE          (* union { ..., long pad[24]; } *)
-                (* val :ARRAY 48 OF CARD32; *)
-        END;
+			XEvent = RECORD
+				val :ARRAY 192 OF BYTE          (* union { ..., long pad[24]; } *)
+					(* val :ARRAY 48 OF CARD32; *)
+		END;
 
 VAR
 	screen* : mScr.TScreen;
-   winWidth*, winHeight* :INTEGER; (* draw by writing to pixel buffer: *)
+	win :mWin.TWindow;
+   winHeight* :INTEGER; (* draw by writing to pixel buffer: *)
    painting :BOOLEAN;
 
    _screen, window :INTEGER;
@@ -48,10 +50,10 @@ VAR
 PROCEDURE getSymAdr (lib :INTEGER; name :ARRAY OF CHAR; adr :INTEGER);
 	VAR sym :INTEGER;
 	BEGIN
-			  sym := unix.dlsym (lib, SYSTEM.ADR(name[0]));
-			  IF sym = 0 THEN out.formatStr ("error: dlsym: %", name); out.nl END;
-			  ASSERT (sym # 0);
-			  SYSTEM.PUT (adr, sym)
+		sym := unix.dlsym (lib, SYSTEM.ADR(name[0]));
+		IF sym = 0 THEN out.formatStr ("error: dlsym: %", name); out.nl END;
+		ASSERT (sym # 0);
+		SYSTEM.PUT (adr, sym)
 	END getSymAdr;
 
 
@@ -108,51 +110,55 @@ PROCEDURE finish*;
 PROCEDURE createWindow* (w, h :INTEGER);
 	VAR eventMask :INTEGER;
 	BEGIN
-			  IF (w > mScr.Width(screen)) OR (h > mScr.Height(screen)) THEN
-						 out.str ("error: X11.createWindow: window too large"); out.exit(1);
-			  END;
-			  ASSERT ((w >= 0) & (h >= 0));
-			  window := mScr.XCreateWindow (mScr.Display(screen), mScr.XDefaultRootWindow (mScr.Display(screen)), 0, 0, w, h, 0,
-						 mScr.XDefaultDepth (mScr.Display(screen), _screen), InputOutput, mScr.XDefaultVisual (mScr.Display(screen), _screen), 0, 0);
-			  winWidth := w; winHeight := h;
-			  eventMask := StructureNotifyMask + ExposureMask + KeyPressMask + ButtonPressMask;
-			  mScr.XSelectInput (mScr.Display(screen), window, eventMask);
-			  mScr.XMapWindow (mScr.Display(screen), window);
+		IF (w > mScr.Width(screen)) OR (h > mScr.Height(screen)) THEN
+			out.str ("error: X11.createWindow: window too large"); out.exit(1);
+		END;
+		ASSERT ((w >= 0) & (h >= 0));
+		window := mScr.XCreateWindow (mScr.Display(screen), mScr.XDefaultRootWindow (mScr.Display(screen)), 0, 0, w, h, 0,
+							mScr.XDefaultDepth (mScr.Display(screen), _screen), InputOutput, mScr.XDefaultVisual (mScr.Display(screen), _screen), 0, 0);
+		
+		
+		
+		win := mWin.New(w, h);
+		winHeight := h;
+		eventMask := StructureNotifyMask + ExposureMask + KeyPressMask + ButtonPressMask;
+		mScr.XSelectInput (mScr.Display(screen), window, eventMask);
+		mScr.XMapWindow (mScr.Display(screen), window);
 	END createWindow;
 
 
 PROCEDURE screenBegin*;
         (* intended to enable future cooperation with iOS / MacOS *)
 	BEGIN
-			  ASSERT (~painting); painting := TRUE
+		ASSERT (~painting); painting := TRUE
 	END screenBegin;
 
 
 PROCEDURE screenEnd*;
 	BEGIN
-			  ASSERT (painting);
-			  mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), 0, 0, 0, 0, winWidth, winHeight);
-			  painting := FALSE;
+		ASSERT (painting);
+		mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), 0, 0, 0, 0, mWin.Width(win), winHeight);
+		painting := FALSE;
 	END screenEnd;
 
 
 PROCEDURE readInt (e :XEvent; i :INTEGER) :INTEGER;
         (* treat XEvent byte array as int array *)
-VAR n :INTEGER;
-BEGIN
-        ASSERT (i >= 0);
-        ASSERT (i < 48);
-        i := i * 4;
-        n := e.val[i+3]*1000000H + e.val[i+2]*10000H + e.val[i+1]*100H + e.val[i];
-RETURN n
-END readInt;
+	VAR n :INTEGER;
+	BEGIN
+			ASSERT (i >= 0);
+			ASSERT (i < 48);
+			i := i * 4;
+			n := e.val[i+3]*1000000H + e.val[i+2]*10000H + e.val[i+1]*100H + e.val[i];
+	RETURN n
+	END readInt;
 
 
 PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :EventPars);
 	VAR _type, n, ri :INTEGER;
-			  event :XEvent;
-			  x, y, w, h :INTEGER;
-			  timeout :unix.timespec;
+		event :XEvent;
+		x, y, w, h :INTEGER;
+		timeout :unix.timespec;
 	BEGIN
 	(* struct XEvent (64-bit):
 	any:   4 type   8 serial   4 send_event   8 mScr.Display(screen)   8 window   8 window
@@ -182,11 +188,11 @@ PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :EventPars);
 											  mScr.XPutImage (mScr.Display(screen), window, mScr.Gc(screen), mScr.Img(screen), x, y, x, y, w, h);
 									| ConfigureNotify :
 											  w := readInt (event, 8 + 6 * bit64); h := readInt (event, 9 + 6 * bit64);
-											  IF (w # winWidth) & (h # winHeight) THEN
+											  IF (w # mWin.Width(win)) & (h # winHeight) THEN
 														 ASSERT ((w >= 0) & (h >= 0));
 														 IF w > mScr.Width(screen) THEN w := mScr.Width(screen) END;
 														 IF h > mScr.Height(screen) THEN h := mScr.Height(screen) END;
-														 winWidth := w; winHeight := h;
+														 mWin.WidthSet(win, w); winHeight := h;
 														 ev[0] := EventResize; ev[1] := 0; ev[2] := w; ev[3] := h; ev[4] := 0;
 											  END;
 									| KeyPress :
@@ -211,12 +217,15 @@ PROCEDURE nextEvent* (msTimeOut :INTEGER; VAR ev :EventPars);
 
 
 PROCEDURE clear* (color :INTEGER);   (* fill window area with color *)
-	VAR p, i, j :INTEGER;
+	VAR
+		p, i, j :INTEGER;
 	BEGIN
-			  FOR j := 0 TO winHeight-1 DO
-						 p := mScr.Base(screen) + j*mScr.Stride(screen);
-						 FOR i := 0 TO winWidth-1 DO SYSTEM.PUT32 (p, color); INC (p, 4) END
-			  END
+		FOR j := 0 TO mWin.Height(win)-1 DO
+			p := mScr.Base(screen) + j*mScr.Stride(screen);
+			FOR i := 0 TO mWin.Width(win)-1 DO
+				SYSTEM.PUT32 (p, color); INC (p, 4)
+			END
+		END
 	END clear;
 
 

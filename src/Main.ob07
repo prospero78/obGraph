@@ -1,4 +1,4 @@
-MODULE animation; (* Пример передвижения черепашки *)
+MODULE Main; (* Пример передвижения черепашки *)
  (* Демонстрация использования таймауту и select() 
 	для отображения и перемещения черепашки в окне X11 *)
 
@@ -34,31 +34,31 @@ PROCEDURE linePut (x : INTEGER; y: INTEGER;sample : ARRAY OF CHAR); (* рису�
 			IF sample[z] = "r" THEN
 				DrawAttr(0FF0000H, x1, y)
 			END;  (* red *)
-	  END;
+		END;
 	END linePut;
 
 PROCEDURE turtlePicture (x , y : INTEGER);(* Рисует картинку черепашки ил строк и литер *)
 	BEGIN
-	  linePut(x, y + 0 , "....bb........");
-	  linePut(x, y + 1 , "....bbb.......");
-	  linePut(x, y + 2 , "....bbbb......");
-	  linePut(x, y + 3 , ".bb..bbb......");
-	  linePut(x, y + 4 , ".bgggbbbgbbgb.");
-	  linePut(x, y + 5 , ".gggrrrggbbbb.");
-	  linePut(x, y + 6 , "bggrrrrggbbbbg");
-	  linePut(x, y + 7 , ".ggggggg......");
-	  linePut(x, y + 8 , ".bb..bbb......");
-	  linePut(x, y + 9 , "....bbbb......");
-	  linePut(x, y + 10, ".....bbb......");
-	  linePut(x, y + 11, ".....bb.......")
+		linePut(x, y + 0 , "....bb........");
+		linePut(x, y + 1 , "....bbb.......");
+		linePut(x, y + 2 , "....bbbb......");
+		linePut(x, y + 3 , ".bb..bbb......");
+		linePut(x, y + 4 , ".bgggbbbgbbgb.");
+		linePut(x, y + 5 , ".gggrrrggbbbb.");
+		linePut(x, y + 6 , "bggrrrrggbbbbg");
+		linePut(x, y + 7 , ".ggggggg......");
+		linePut(x, y + 8 , ".bb..bbb......");
+		linePut(x, y + 9 , "....bbbb......");
+		linePut(x, y + 10, ".....bbb......");
+		linePut(x, y + 11, ".....bb.......")
 	END turtlePicture;
 
 PROCEDURE screenUpdate;(* Отрисовка всего кадра *)
 	BEGIN
-			  mGr.screenBegin;
-			  mGr.clear (0C0F0FFH);  (* light blue *)
-			  turtlePicture (currentX, 15);
-			  mGr.screenEnd;
+		mGr.screenBegin;
+		mGr.clear (0C0F0FFH);  (* light blue *)
+		turtlePicture (currentX, 15);
+		mGr.screenEnd;
 	END screenUpdate;
 
 PROCEDURE MainLoop; (* Главный цикл работы анимации *)
@@ -90,4 +90,4 @@ PROCEDURE MainLoop; (* Главный цикл работы анимации *)
 
 BEGIN
 	MainLoop;
-END animation.
+END Main.
