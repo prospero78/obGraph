@@ -1,6 +1,7 @@
 MODULE window; (* Модуль предоставляет тип окна *)
 
-IMPORT SYSTEM;
+IMPORT SYSTEM,
+   Out;
 
 TYPE
    TWindow* = POINTER TO RECORD (* Тип окна для манипуляций *)
@@ -12,11 +13,17 @@ TYPE
 PROCEDURE New*(width, height, number :INTEGER):TWindow; (* Возвращает новое окно *)
    VAR
       win   :TWindow;
+   PROCEDURE Test;
+      BEGIN
+         Out.String("test ==================\n")
+      END;
    BEGIN
+      Test;
       NEW(win);
       win.height := height;
       win.width  := width;
       win.number := number;
+      Out.String("test -------------------\n")
       RETURN win
    END New;
 

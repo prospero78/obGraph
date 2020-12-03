@@ -3,9 +3,9 @@ MODULE Main; (* Пример передвижения черепашки *)
 	для отображения и перемещения черепашки в окне X11 *)
 
 IMPORT SYSTEM, 
-	mGr := xgraph,
-	mSqr := square,
-	mEvn := event;
+	mGr IN "./graph/xgraph.ob07",
+	mSqr IN "./graph/square",
+	mEvn IN "./graph/event";
 
 CONST
 	Side = 8;  (* nr of pixels of a square side *)

@@ -27,14 +27,17 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=1
-FILE_NAME_0=309;Python;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2FMain.ob07;0;3
-FILE_NAME_1=330;Python;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Fsquare.ob07;0;3
-FILE_NAME_2=71;Python;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Fgr.ob07;0;3
-FILE_NAME_3=109;Python;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Fout.ob07;0;4
-FILE_NAME_4=1893;None;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Funix.ob07;0;4
-FILE_NAME_5=19;Make;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2FMakefile;0;4
-FILE_NAME_6=759;Conf;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2F.config%2Fgeany%2Ffiledefs%2Ffiletypes.python;0;4
+current_page=9
+FILE_NAME_0=2036;Python;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2FMain.ob07;0;3
+FILE_NAME_1=1619;Python;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Fsquare.ob07;0;3
+FILE_NAME_2=4453;Python;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Fscreen.ob07;0;3
+FILE_NAME_3=1469;Python;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Fxgraph.ob07;0;3
+FILE_NAME_4=109;Python;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Fout.ob07;0;4
+FILE_NAME_5=1893;None;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Funix.ob07;0;4
+FILE_NAME_6=19;Make;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2FMakefile;0;4
+FILE_NAME_7=1080;Conf;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2F.config%2Fgeany%2Ffiledefs%2Ffiletypes.python;0;4
+FILE_NAME_8=89;None;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FobGraph%2Fsrc%2Fwindow.ob07;0;4
+FILE_NAME_9=0;Make;0;EUTF-8;1;1;0;%2Fhome%2Fwalera%2Fcoding%2Fgowork%2Fsrc%2Fgithub.com%2Fprospero78%2FgoOC%2FMakefile;0;4
 
 [VTE]
 last_dir=/home/walera

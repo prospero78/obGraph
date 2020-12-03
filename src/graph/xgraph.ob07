@@ -7,11 +7,11 @@
 
 IMPORT 
 	SYSTEM, 
-	unix, 
-	out,
-	mScr := screen,
-	mWin := window,
-	mEvn := event;
+	unix IN "./unix", 
+	out IN "./out.ob07",
+	mScr IN "./screen",
+	mWin IN "./window",
+	mEvn IN "./event";
 
 CONST
 		InputOutput = 1;
